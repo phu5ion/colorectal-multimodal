@@ -4,7 +4,7 @@ This project showcases the methods used in our paper: Predictive models for colo
 
 1. Baseline standard ML models that utilise pre-extracted time-series features combined with tabular data
 2. Deep-learning hybrid models that receives and processes dual input (time-series and tabular data), integrates learnt features to output a decision  
-- Our own modified transformer (details in our paper)
+- Our own modified transformer HTMV (details in our paper)
 - LSTM
 - Temporal convolutional network ([Wavenet](https://arxiv.org/abs/1609.03499))
 3. Denoising autoencoder that learns a latent representation of each data modality in an unsupervised manner. The representations can be combined and fed through a standard ML classifier such as SVM to learn the classification task.
