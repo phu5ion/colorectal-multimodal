@@ -78,18 +78,18 @@ class MultiHeadSelfAttention(Layer):
             concat_attention
         )  # (batch_size, seq_len, embed_dim) # do a linear projection
         return output
-def transformer(d_model, stack=2, h=8, dropout=0.1, local_att_size=10, mask='local', use_cnn=True):
+def transformer(d_model, ts_length, stack=2, h=8, dropout=0.1, local_att_size=10, mask='local', use_cnn=True):
     # stack: num encoder and decoder stacks, each
     # h: num heads. h>1 for multi-headed attention
     kernel_init='he_uniform'
     
-    ts_input = Input(shape=(169, 1))
+    ts_input = Input(shape=(ts_length, 1))
     # Positional encodings
     pos_encodings = positional_encoding(ts_length, d_model)
     # Embedding
     embedding = Dense(d_model, activation='linear', name='original_encodings')(ts_input + pos_encodings) # Linear encoding # Dense layer with 1dim is actually the same as an Embedding layer
     # Create look_ahead_mask for causal attention. This works on the global sequence
-    seq_len = 169
+    seq_len = ts_length
     look_ahead_mask = 1 - tf.linalg.band_part(tf.ones((seq_len, seq_len)), -1, 0) # Set lower triangular part to 1, upper to 0
     # We also create a local mask that also implements causal attention so that it doesn't need to look so far behind
     local_mask = 1 - tf.linalg.band_part(tf.ones((seq_len, seq_len)), local_att_size, 0)
@@ -125,7 +125,7 @@ def transformer(d_model, stack=2, h=8, dropout=0.1, local_att_size=10, mask='loc
         x = LayerNormalization(epsilon=1e-6)(x+residual)
         # Encoder-decoder attention
         residual = x
-        x = MultiHeadSelfAttention(embed_dim=d_model, num_heads=h, future_mask=mask, use_cnn=use_cnn)([x,enc_output,enc_output]) # key and value are our encoder output/memory
+        x = MultiHeadSelfAttention(embed_dim=d_model, num_heads=h, use_cnn=use_cnn)([x,enc_output,enc_output]) # key and value are our encoder output/memory
         x = Dropout(dropout)(x)
         x = LayerNormalization(epsilon=1e-6)(x+residual)
         # Feed-forward
